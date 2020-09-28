@@ -1,12 +1,12 @@
 {
-  "name": "app",
+  "name": "webapp",
   "version": "1.0.0",
-  "description": "",
+  "description": "## Technology Stack * Backend Technology: Node JS * Framework: Express * Database: MySQL",
   "main": "app.js",
   "dependencies": {
+    "basic-auth": "^2.0.1",
     "bcrypt": "^5.0.0",
     "body-parser": "^1.19.0",
-    "basic-auth": "^2.0.1",
     "cors": "^2.8.5",
     "dotenv": "^8.2.0",
     "email-validator": "^2.0.4",
