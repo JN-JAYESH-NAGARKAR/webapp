@@ -6,14 +6,19 @@
 * Database: MySQL
 
 ## Build Instructions
-* Clone repo using command "git clone git@github.com:gamitd-fall2020/webapp.git"
-* Navigate to webapp directory in webapp folder using "cd webapp" command
-* Run "npm install" command on terminal
+* Clone this repository 
+    $ git clone git@github.com:gamitd-fall2020/webapp.git
+* Navigate to webapp directory
+    $ cd webapp
+* Run command on terminal to install all the required dependencies
+    $ npm install 
 
 ## Deploy Instructions
-* Run "npm start" command on terminal
+* To start Application
+    $ npm start
 * Test api endpoint using Postman or other.
 
 ## Running Tests
-* Run "npm test" on webapp directory.
+* To run Test 
+    $ npm run test
 
