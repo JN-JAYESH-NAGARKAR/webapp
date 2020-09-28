@@ -13,3 +13,7 @@
 ## Deploy Instructions
 * Run "npm start" command on terminal
 * Test api endpoint using Postman or other.
+
+## Running Tests
+* Run "npm test" on webapp directory.
+
