@@ -39,4 +39,3 @@
     ```sh
     $ npm run test
     ```
-

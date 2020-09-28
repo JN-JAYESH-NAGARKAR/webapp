@@ -1,0 +1,31 @@
+{
+  "name": "webapp",
+  "version": "1.0.0",
+  "description": "## Technology Stack * Backend Technology: Node JS * Framework: Express * Database: MySQL",
+  "main": "app.js",
+  "dependencies": {
+    "basic-auth": "^2.0.1",
+    "bcrypt": "^5.0.0",
+    "body-parser": "^1.19.0",
+    "cors": "^2.8.5",
+    "dotenv": "^8.2.0",
+    "email-validator": "^2.0.4",
+    "express": "^4.17.1",
+    "mysql2": "^2.2.5",
+    "nodemon": "^2.0.4",
+    "password-validator": "^5.1.0",
+    "regex": "^0.1.1",
+    "sequelize": "^6.3.5",
+    "supertest": "^5.0.0",
+    "uuidv4": "^6.2.3"
+  },
+  "devDependencies": {
+    "mocha": "^8.1.3"
+  },
+  "scripts": {
+    "test": "mocha",
+    "start": "node server.js"
+  },
+  "author": "",
+  "license": "ISC"
+}
