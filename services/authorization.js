@@ -8,9 +8,11 @@ const authorizeAndGetUser = async (req,res, User) => {
     const credentials = auth(req);
 
     if(!credentials){
+
         res.status(400).send({
             message: "Please Login!"
         });
+
     } else if (credentials){
 
         let email = credentials.name;
@@ -25,10 +27,12 @@ const authorizeAndGetUser = async (req,res, User) => {
             });
 
             if(!user){
+
                 res.setHeader('WWW-Authentication', 'Basic realm = "example"');
                 res.status(401).send({
-                    Unauthorized: "Invalid Credentials"
+                    Unauthorized: "Username doesn't exists"
                 });
+
             } else {
 
                 if(! await bcrypt.compare(password, user.password)){
@@ -36,20 +40,22 @@ const authorizeAndGetUser = async (req,res, User) => {
                     res.status(401).send({
                         Unauthorized: "Invalid Credentials"
                     });
+
+                } else {
+
+                    return user;
+
                 }
             }
-
-            return user;
-
         }
 
-
     } else {
+        
         res.status(400).send({
             message: "Please enter Username and Password!"
         });
-    }
 
+    }
     
 }
 
