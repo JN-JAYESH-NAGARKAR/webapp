@@ -5,7 +5,7 @@ var schema = new passwordValidator();
 
 schema
 .is().min(8)
-.is().max(26)
+.is().max(30)
 .has().uppercase()
 .has().lowercase()
 .has().digits()
@@ -26,11 +26,12 @@ const validatePassword = password => {
     let errors = schema.validate(password, { list: true });
     let errorMessagae = []
     errors.forEach(element => {
+
         if(element == "min"){
             errorMessagae.push('The password must be at least 8 characters long.');
         }
         if(element == "max"){
-            errorMessagae.push('The password cannot be more than 26 characters long.');
+            errorMessagae.push('The password cannot be more than 30 characters long.');
         }
         if(element == "uppercase"){
             errorMessagae.push('The password must have atleast 1 uppercase character.');
