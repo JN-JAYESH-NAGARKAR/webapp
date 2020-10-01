@@ -109,7 +109,6 @@ exports.updateUser = async (req, res) => {
             res.status(400).send({
                 message: "Cannot update Email_Address, Account Updated & Account_Created field."
             });
-    
         } else if(!password && !first_name && !last_name){
     
             res.status(400).send({
@@ -117,30 +116,64 @@ exports.updateUser = async (req, res) => {
             });
         } else {
 
-            if(password) {
-    
-                let passwordErrors = await validator.validatePassword(password);
-                if(passwordErrors.length != 0){
+            if(!password){
+
+                if(typeof password === typeof ""){
+                    
                     res.status(400).send({
-                        message: passwordErrors
-                    })
-                } else {
-                    const hashedPassword = await bcrypt.hash(password,10);
-                    user.password = hashedPassword;
-                }
+                        message: "Password cannot be empty!"
+                    });
+                    return;
+                } 
+            } else {
+
+                    let passwordErrors = await validator.validatePassword(password);
+                    if(passwordErrors.length != 0){
+                        res.status(400).send({
+                            message: passwordErrors
+                        })
+                    } else {
+                        const hashedPassword = await bcrypt.hash(password,10);
+                        user.password = hashedPassword;
+                    }
             }
-        
-            if(first_name) {
+
+            if(!first_name){
+
+                if(typeof first_name === typeof ""){
+
+                    res.status(400).send({
+                        message: "First Name cannot be empty!"
+                    });
+
+                    return;
+    
+                } 
+            } else {
+
                 user.first_name = first_name;
+
             }
-        
-            if(last_name) {
+
+            if(!last_name){
+
+                if(typeof last_name === typeof ""){
+
+                    res.status(400).send({
+                        message: "Last Name cannot be empty!"
+                    });
+
+                    return;
+    
+                } 
+            } else {
+
                 user.last_name = last_name;
+
             }
         
             await user.save();
             res.status(204).send({
-        
                 message: "Updated Successfully."
             });
 
