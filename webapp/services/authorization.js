@@ -13,12 +13,12 @@ const authorizeAndGetUser = async (req,res, User) => {
             message: "Please Login!"
         });
 
-    } else if (credentials){
+    } else {
 
         let email = credentials.name;
         let password = credentials.pass;
 
-        if(email != null && password != null){
+        if(email && password){
             
             let user = await User.findOne({
                 where: {
@@ -47,13 +47,15 @@ const authorizeAndGetUser = async (req,res, User) => {
 
                 }
             }
-        }
+        } else {
 
-    } else {
-        
-        res.status(400).send({
-            message: "Please enter Username and Password!"
-        });
+            if(typeof email === typeof "" && typeof password === typeof "") {
+                res.status(400).send({
+                    message: "Please enter Username and Password!"
+                });
+            }
+
+        }
 
     }
     
