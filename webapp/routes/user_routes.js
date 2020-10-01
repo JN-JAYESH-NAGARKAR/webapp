@@ -7,10 +7,10 @@ const router = express.Router();
 router.post('/', userController.createUser);
 
 //Get User Information
-router.get('/self/', userController.getUser);
+router.get('/self', userController.getUser);
 
 // Update User Information
-router.put('/self/', userController.updateUser);
+router.put('/self', userController.updateUser);
 
 //Mock Function
 router.get('/authorizeTest', userController.authorizeTest);
