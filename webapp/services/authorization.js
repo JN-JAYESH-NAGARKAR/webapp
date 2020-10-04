@@ -1,7 +1,5 @@
 const auth = require('basic-auth');
 const bcrypt = require('bcrypt');
-const db = require('../database/sequelize');
-
 
 const authorizeAndGetUser = async (req,res, User) => {
 
@@ -15,14 +13,14 @@ const authorizeAndGetUser = async (req,res, User) => {
 
     } else {
 
-        let email = credentials.name;
+        let username = credentials.name;
         let password = credentials.pass;
 
-        if(email && password){
+        if(username && password){
             
             let user = await User.findOne({
                 where: {
-                    email_address: email
+                    username: username
                 }
             });
 
@@ -49,7 +47,7 @@ const authorizeAndGetUser = async (req,res, User) => {
             }
         } else {
 
-            if(typeof email === typeof "" && typeof password === typeof "") {
+            if(typeof username === typeof "" && typeof password === typeof "") {
                 res.status(400).send({
                     message: "Please enter Username and Password!"
                 });

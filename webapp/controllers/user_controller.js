@@ -9,20 +9,21 @@ const User = db.user;
 
 exports.createUser = async (req, res) => {
 
-    let email_address = req.body.email_address;
+    let username = req.body.username;
     let password = req.body.password;
     let first_name = req.body.first_name;
     let last_name = req.body.last_name;
 
-    if(email_address && password && first_name && last_name){
-        if(validator.validateEmail(email_address)){
+    if(username && password && first_name && last_name){
+        if(validator.validateEmail(username)){
 
-            let alreadyExists = await User.findOne({ where: {email_address: email_address}});
+            let alreadyExists = await User.findOne({ where: {username: username}});
             if(alreadyExists != null){
 
                 res.status(409).send({
                     message: "User already exists."
                 });
+
             } else {
 
                 let passwordErrors = await validator.validatePassword(password);
@@ -30,7 +31,8 @@ exports.createUser = async (req, res) => {
 
                     res.status(400).send({
                         message: passwordErrors
-                    })
+                    });
+
                 } else {
 
                     const salt = await bcrypt.genSalt(10);
@@ -42,7 +44,7 @@ exports.createUser = async (req, res) => {
                         first_name: first_name,
                         last_name: last_name,
                         password: hashedPassword,
-                        email_address: email_address
+                        username: username
                 };
         
                     User.create(user)
@@ -50,10 +52,7 @@ exports.createUser = async (req, res) => {
 
                             let temp = data.toJSON();
                             delete temp.password;
-                            res.status(201).send({
-                                message: "User created successfully.",
-                                object: temp
-                            });
+                            res.status(201).send(temp);
                         })
                         .catch(err => {
 
@@ -62,20 +61,19 @@ exports.createUser = async (req, res) => {
                             });
                         });
                 }
-
             }
 
         } else {
 
             res.status(400).send({
-                message: "Invalid Email Address."
-            })
+                message: "Invalid Username."
+            });
         }
         
     } else {
 
         res.status(400).send({
-            message: "Please Enter all fields Email_Address, Password, First_Name, Last_Name."
+            message: "Please Enter all fields Username, Password, First_Name, Last_Name."
         });
     }
 }
@@ -104,10 +102,10 @@ exports.updateUser = async (req, res) => {
 
     if(user){
 
-        if(req.body.email_address || req.body.account_updated || req.body.account_created){
+        if(req.body.username || req.body.account_updated || req.body.account_created){
 
             res.status(400).send({
-                message: "Cannot update Email_Address, Account Updated & Account_Created field."
+                message: "Cannot update Username, Account Updated & Account_Created field."
             });
         } else if(!password && !first_name && !last_name){
     
