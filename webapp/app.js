@@ -23,5 +23,10 @@ app.get("/", (req, res) => {
 const userRoute = require('./routes/user_routes');
 app.use('/v1/user', userRoute);
 
+const questionRoute = require('./routes/question_routes');
+app.use('/v1/question', questionRoute);
+
+app.use('/v1/questions', require('./controllers/question_controller').getAllQuestions);
+
 
 module.exports = app;
