@@ -219,9 +219,3 @@ exports.updateAQuestion = async (req, res) => {
     }
 
 }
-
-
-
-   
-    
-    

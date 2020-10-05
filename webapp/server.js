@@ -2,7 +2,7 @@ const app = require('./app');
 
 // Database Connection
 const db = require("./database/sequelize");
-db.sequelize.sync({ force: true }).then(() => {
+db.sequelize.sync({ force: false }).then(() => {
     console.log(`Database Connected.`);
 });
 
