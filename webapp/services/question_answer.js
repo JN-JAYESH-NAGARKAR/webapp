@@ -47,4 +47,15 @@ const findQuestionById = async (id) => {
 
 }
 
-module.exports = {findQuestionById, findAllQuestions};
+const findAnswerById = async (id) => {
+
+    const answer = await Answer.findOne({
+        where: {answer_id: id }, 
+    });
+
+    return answer;
+
+}
+
+
+module.exports = {findQuestionById, findAllQuestions, findAnswerById};
