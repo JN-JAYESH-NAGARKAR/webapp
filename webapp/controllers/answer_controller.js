@@ -58,7 +58,7 @@ exports.getAnswer = async (req, res) => {
 
     if(question){
         
-        const answer = await answerService.findAnswerById(req.params.answerID);
+        const answer = await answerService.findAnswerById(req.params.answerID, req.params.questionID);
 
         if(answer){
 
@@ -89,7 +89,7 @@ exports.deleteAnswer = async (req, res) => {
 
         if(question){
 
-            const answer = await answerService.findAnswerById(req.params.answerID);
+            const answer = await answerService.findAnswerById(req.params.answerID, req.params.questionID);
 
             if(answer){
 
@@ -141,7 +141,7 @@ exports.updateAnswer = async (req, res) => {
 
         if(question){
 
-            const answer = await answerService.findAnswerById(req.params.answerID);
+            const answer = await answerService.findAnswerById(req.params.answerID, req.params.questionID);
 
             if(answer){
 
