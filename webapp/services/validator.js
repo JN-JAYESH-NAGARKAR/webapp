@@ -14,8 +14,8 @@ schema
 .has().not().spaces()
 
 const validateCategory = category => {
-
-    if(/[!@#$%^&*()_\=\[\]{};':"\\|,<>\/?]+/.test(category)){
+    var regexCategory = /[!@#$%^&*()_\=\[\]{};':"\\|,<>\/?]+/
+    if(regexCategory.test(category)){
         return false;
     } else {
         return true;

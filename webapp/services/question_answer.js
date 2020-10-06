@@ -48,10 +48,10 @@ const findQuestionById = async (id) => {
 
 }
 
-const findAnswerById = async (id) => {
+const findAnswerById = async (answer_id, question_id) => {
 
     const answer = await Answer.findOne({
-        where: {answer_id: id }, 
+        where: {answer_id, question_id }, 
     });
 
     return answer;
