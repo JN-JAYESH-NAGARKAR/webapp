@@ -1,4 +1,5 @@
 const db = require('../database/sequelize');
+const v4 = require('uuidv4');
 const Question = db.question;
 const Category = db.category;
 const Answer = db.answer;

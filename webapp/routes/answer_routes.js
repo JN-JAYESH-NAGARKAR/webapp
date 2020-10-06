@@ -3,7 +3,7 @@ const answerController = require('../controllers/answer_controller');
 const router = express.Router();
 
 //Post a Question's Answer
-router.post('/:questionID/', answerController.postAnswer);
+router.post('/:questionID/answer', answerController.postAnswer);
 
 //Get a Question's Answer
 router.get('/:questionID/answer/:answerID', answerController.getAnswer);
