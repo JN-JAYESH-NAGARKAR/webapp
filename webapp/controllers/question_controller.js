@@ -53,9 +53,9 @@ exports.createQuestion = async (req, res) => {
                         let inputCategory = inputCategories[i];
                         let value = inputCategory.category.toLowerCase();
                     
-                        let check = await validator.validateCategory(value);
+                        let check = validator.validateCategory(value);
     
-                        // if(check){
+                        if(check){
     
                             let [category, created] = await Category.findOrCreate({
                                 where: {category: value}, 
@@ -64,13 +64,13 @@ exports.createQuestion = async (req, res) => {
     
                             await question.addCategory(category);
     
-                        // } else {
+                        } else {
     
-                            // res.status(400).send({
-                            //     message: "Category Name cannot have special characters."
-                            // });
+                            res.status(400).send({
+                                message: "Category Name cannot have special characters."
+                            });
     
-                        // }  
+                        }  
                     }
     
                     const result = await questionService.findQuestionById(question.question_id);
@@ -217,14 +217,26 @@ exports.updateAQuestion = async (req, res) => {
         
                                 let inputCategory = categories[i];
                                 let value = inputCategory.category.toLowerCase();
-                    
-                                let [category, created] = await Category.findOrCreate({
-                                    where: {category: value}, 
-                                    defaults: {category_id: v4.uuid()}
-                                })
-                    
-                                await question.addCategory(category);
+
+                                let check = validator.validateCategory(value);
+                                
+                                if(check){
+
+                                    let [category, created] = await Category.findOrCreate({
+                                        where: {category: value}, 
+                                        defaults: {category_id: v4.uuid()}
+                                    })
                         
+                                    await question.addCategory(category);
+
+                                } else {
+
+                                    res.status(400).send({
+                                        message: "Category Name cannot have special characters."
+                                    });
+
+                                }
+                    
                             }
 
                         }
