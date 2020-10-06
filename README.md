@@ -25,6 +25,17 @@
     ```
 
 ## Deploy Instructions
+
+* Create Enviornment File
+
+    ```sh
+    $ export PORT={PORT_NUMBER}
+    $ export DB_HOST={HOST_NAME}
+    $ export DB_USER={DATABASE_USERNAME}
+    $ export DB_PASSWORD={DATABASE_PWD}
+    $ export DB_NAME={DATABASE_SCHEMA_NAME}
+    ```
+
 * To start Application
 
     ```sh
