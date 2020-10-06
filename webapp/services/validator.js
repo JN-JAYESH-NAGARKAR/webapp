@@ -3,6 +3,7 @@ const passwordValidator = require("password-validator");
 
 var schema = new passwordValidator();
 
+
 schema
 .is().min(8)
 .is().max(30)
@@ -12,6 +13,14 @@ schema
 .has().symbols()
 .has().not().spaces()
 
+const validateCategory = category => {
+
+    if(/[!@#$%^&*()_\=\[\]{};':"\\|,<>\/?]+/.test(category)){
+        return false;
+    } else {
+        return true;
+    }
+}
 
 const validateEmail = email => {
 
@@ -54,4 +63,25 @@ const validatePassword = password => {
     return errorMessagae;
 }
 
-module.exports = { validateEmail, validatePassword};
+const checkIfCategoryEmpty = async (req, res, inputCategories) => {
+
+    for(let i=0; i<inputCategories.length; i++){
+        
+        let value = inputCategories[i].category;
+
+        if(!value || 0 === value.length){
+
+            res.status(400).send({
+                message: "Category Name cannot be empty!"
+            });
+
+            return false;
+
+        }
+    }
+
+    return true;
+
+}
+
+module.exports = { validateEmail, validatePassword, validateCategory, checkIfCategoryEmpty};

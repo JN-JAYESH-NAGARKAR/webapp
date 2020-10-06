@@ -1,11 +1,11 @@
 const v4 = require('uuidv4');
 const db = require('../database/sequelize');
+const validator = require('../services/validator');
 const authorization = require('../services/authorization');
 const questionService = require('../services/question_answer');
 const User = db.user;
 const Question = db.question;
 const Category = db.category;
-
 
 exports.createQuestion = async (req, res) => {
 
@@ -15,41 +15,73 @@ exports.createQuestion = async (req, res) => {
 
         if(req.body.question_text){
 
-            let question = await Question.create({
-
-                question_id: v4.uuid(),
-                question_text: req.body.question_text
-    
-            })
-    
-            await user.addQuestion(question);
-
             let inputCategories = req.body.categories;
 
-            if(!(typeof inputCategories === typeof undefined)){
+            if(!inputCategories){
 
-                for(let i=0; i<inputCategories.length; i++){
-        
-                    let inputCategory = inputCategories[i];
-        
-                    let [category, created] = await Category.findOrCreate({
-                        where: {category: inputCategory.category}, 
-                        defaults: {category_id: v4.uuid()}
-                    })
-        
-                    await question.addCategory(category);
+                let question = await Question.create({
+
+                    question_id: v4.uuid(),
+                    question_text: req.body.question_text
+            
+                });
                 
-                }
+                await user.addQuestion(question);
+                await question.setCategories([]);
+            
+                const result = await questionService.findQuestionById(question.question_id);
+            
+                res.status(201).send(result.toJSON());
 
             } else {
 
-                await question.setCategories([]);
+                let empty = await validator.checkIfCategoryEmpty(req, res, inputCategories);
+
+                if(empty){
+    
+                    let question = await Question.create({
+    
+                        question_id: v4.uuid(),
+                        question_text: req.body.question_text
+                
+                    });
+    
+                    await user.addQuestion(question);
+    
+                    for(let i=0; i<inputCategories.length; i++){
+            
+                        let inputCategory = inputCategories[i];
+                        let value = inputCategory.category.toLowerCase();
+                    
+                        let check = await validator.validateCategory(value);
+    
+                        // if(check){
+    
+                            let [category, created] = await Category.findOrCreate({
+                                where: {category: value}, 
+                                defaults: {category_id: v4.uuid()}
+                            });
+    
+                            await question.addCategory(category);
+    
+                        // } else {
+    
+                            // res.status(400).send({
+                            //     message: "Category Name cannot have special characters."
+                            // });
+    
+                        // }  
+                    }
+    
+                    const result = await questionService.findQuestionById(question.question_id);
+    
+                    res.status(201).send(result.toJSON());
+    
+                }
 
             }
-        
-                const result = await questionService.findQuestionById(question.question_id);
-        
-                res.status(201).send(result.toJSON());
+
+              
     
         } else {
 
@@ -175,19 +207,26 @@ exports.updateAQuestion = async (req, res) => {
 
                     if(!(typeof categories === typeof undefined)){
 
-                        await question.setCategories([]);
+                        let empty = await validator.checkIfCategoryEmpty(req, res, categories);
 
-                        for(let i=0; i<categories.length; i++){
-    
-                            let inputCategory = categories[i];
-                
-                            let [category, created] = await Category.findOrCreate({
-                                where: {category: inputCategory.category}, 
-                                defaults: {category_id: v4.uuid()}
-                            })
-                
-                           await question.addCategory(category);
+                        if(empty){
+
+                            await question.setCategories([]);
+
+                            for(let i=0; i<categories.length; i++){
+        
+                                let inputCategory = categories[i];
+                                let value = inputCategory.category.toLowerCase();
+                    
+                                let [category, created] = await Category.findOrCreate({
+                                    where: {category: value}, 
+                                    defaults: {category_id: v4.uuid()}
+                                })
+                    
+                                await question.addCategory(category);
                         
+                            }
+
                         }
 
                     }
