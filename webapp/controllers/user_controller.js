@@ -196,7 +196,7 @@ exports.getUserInfo = async (req, res) => {
         res.status(200).send(user);
 
     } else {
-        res.status(400).send({
+        res.status(404).send({
             message: "User doesnot exists!"
         });
     }

@@ -148,8 +148,7 @@ exports.getAQuestion = async (req, res) => {
 
             } else {
 
-                res.setHeader('WWW-Authenticate', 'Basic realm="example"');
-                res.status(401).send({
+                res.status(403).send({
                     message: "Unauthorized to delete this question."
                 });
 
@@ -252,8 +251,7 @@ exports.updateAQuestion = async (req, res) => {
 
             } else {
 
-                res.setHeader('WWW-Authenticate', 'Basic realm="example"');
-                res.status(401).send({
+                res.status(403).send({
                     message: "Unauthorized to update this question."
                 });
 
