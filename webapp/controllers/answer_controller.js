@@ -29,7 +29,7 @@ exports.postAnswer = async (req, res) => {
                 await question.addAnswer(answer);
                 await user.addAnswer(answer);
 
-                const result = await answerService.findAnswerById(answer.answer_id);
+                const result = await answerService.findAnswerById(answer.answer_id, req.params.questionID);
     
                 res.status(201).send(result.toJSON());
                 
