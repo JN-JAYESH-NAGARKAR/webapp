@@ -181,6 +181,27 @@ exports.updateUser = async (req, res) => {
 
 }
 
+exports.getUserInfo = async (req, res) => {
+
+    let user = await User.findOne({
+        where: {
+            id: req.params.id
+        }
+    });
+
+    if(user){
+
+        user = user.toJSON();
+        delete user.password;
+        res.status(200).send(user);
+
+    } else {
+        res.status(400).send({
+            message: "User doesnot exists!"
+        });
+    }
+}
+
 //Mock Functions
 
 exports.authorizeTest = (req, res) => {
