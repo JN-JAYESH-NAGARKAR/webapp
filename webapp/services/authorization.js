@@ -7,7 +7,7 @@ const authorizeAndGetUser = async (req,res, User) => {
 
     if(!credentials){
 
-        res.status(400).send({
+        res.status(401).send({
             message: "Please Login!"
         });
 
