@@ -1,5 +1,6 @@
 const app = require('./app');
 
+
 // Database Connection
 const db = require("./database/sequelize");
 db.sequelize.sync({ force: false }).then(() => {

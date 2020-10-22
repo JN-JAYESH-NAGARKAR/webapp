@@ -4,6 +4,7 @@
   "description": "## Technology Stack * Backend Technology: Node JS * Framework: Express * Database: MySQL",
   "main": "app.js",
   "dependencies": {
+    "aws-sdk": "^2.773.0",
     "basic-auth": "^2.0.1",
     "bcrypt": "^5.0.0",
     "body-parser": "^1.19.0",
@@ -11,12 +12,17 @@
     "dotenv": "^8.2.0",
     "email-validator": "^2.0.4",
     "express": "^4.17.1",
+    "fs": "0.0.1-security",
+    "multer": "^1.4.2",
+    "multer-s3": "^2.9.0",
     "mysql2": "^2.2.5",
     "nodemon": "^2.0.4",
     "password-validator": "^5.1.0",
+    "path": "^0.12.7",
     "regex": "^0.1.1",
     "sequelize": "^6.3.5",
     "supertest": "^5.0.0",
+    "underscore": "^1.11.0",
     "uuidv4": "^6.2.3"
   },
   "devDependencies": {

@@ -3,6 +3,8 @@ const db = require('../database/sequelize');
 const validator = require('../services/validator');
 const authorization = require('../services/authorization');
 const questionService = require('../services/question_answer');
+const fileService = require('../services/file');
+const s3 = require('../controllers/file_controller').s3;
 const User = db.user;
 const Question = db.question;
 const Category = db.category;
@@ -78,11 +80,8 @@ exports.createQuestion = async (req, res) => {
                     res.status(201).send(result.toJSON());
     
                 }
-
             }
 
-              
-    
         } else {
 
             res.status(400).send({
@@ -135,6 +134,12 @@ exports.getAQuestion = async (req, res) => {
                     });
 
                 } else {
+
+                    let question_attachments = await question.getAttachments();
+
+                    question_attachments.forEach(async element => {
+                        await fileService.questionDeleteFile(element, s3, question);
+                    });
 
                     let result = await Question.destroy({ where: {question_id: question.question_id} });
 
