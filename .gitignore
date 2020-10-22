@@ -103,3 +103,8 @@ dist
 
 # TernJS port file
 .tern-port
+
+# Upload files
+/upload/*.png
+/upload/*.jpg
+/upload/*.jpeg
