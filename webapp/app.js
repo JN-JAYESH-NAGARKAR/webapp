@@ -31,5 +31,7 @@ app.get('/v1/questions', require('./controllers/question_controller').getAllQues
 const answerRoute = require('./routes/answer_routes');
 app.use('/v1/question', answerRoute);
 
+const fileRoute = require('./controllers/file_controller');
+app.use('/v1/question', fileRoute.router);
 
 module.exports = app;

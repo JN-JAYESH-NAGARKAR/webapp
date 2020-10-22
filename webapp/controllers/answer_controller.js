@@ -3,6 +3,8 @@ const db = require('../database/sequelize');
 const authorization = require('../services/authorization');
 const questionService = require('../services/question_answer');
 const answerService = require('../services/question_answer');
+const fileService = require('../services/file');
+const s3 = require('../controllers/file_controller').s3;
 const User = db.user;
 const Answer = db.answer;
 
@@ -94,7 +96,12 @@ exports.deleteAnswer = async (req, res) => {
             if(answer){
 
                 if(answer.user_id === user.id){
+                    
+                    let attachments = await answer.getAttachments();
 
+                    attachments.forEach(async element => {
+                        await fileService.answerDeleteFile(element, s3, answer);
+                    });
                     let result = await Answer.destroy({ where: {answer_id: answer.answer_id} });
 
                     if(result){
