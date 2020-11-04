@@ -74,6 +74,6 @@ jobs:
         --region ${{ env.AWS_REGION }} \
         --output json) > deployment_id.txt
         ls -al
-        deployId = $(jq --raw-output '.deploymentId' deployment_id.txt)
+        deployId=$(jq --raw-output '.deploymentId' deployment_id.txt)
         aws deploy wait deployment-successful --deployment-id $deployId
         
