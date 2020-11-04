@@ -40,7 +40,7 @@ jobs:
 
     - name: Built Deployment Artifacts
       run: |
-        rm -r codedeploy_artifact
+      
         mkdir codedeploy_artifact
         zip -r ${{ env.ARTIFACT_NAME }} webapp codedeploy/*.sh appspec.yml --exclude webapp/.env
         pwd
