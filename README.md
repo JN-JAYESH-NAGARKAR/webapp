@@ -45,7 +45,7 @@
 * Test api endpoint using Postman or other.
 
 ## Running Tests
-* To run Test Cases 
+* To run Test  
 
     ```sh
     $ npm run test
