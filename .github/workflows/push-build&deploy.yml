@@ -30,7 +30,7 @@ jobs:
 
     - name: Install Dependencies
       run: |
-        sudo apt-get update && sudo apt-get install -y wget zip unzip
+        sudo apt-get update && sudo apt-get install -y wget zip unzip jq
 
     - name: Install awscli
       run: |
