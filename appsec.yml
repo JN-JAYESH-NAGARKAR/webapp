@@ -1,0 +1,23 @@
+version: 0.0
+os: linux
+
+files:
+  - source: ./
+    destination: /home/ubuntu/webapp/
+
+hooks:
+
+  BeforeInstall:
+    - location: ./codedeploy_scripts/beforeInstall.sh
+      timeout: 300
+      runas: ubuntu
+
+  AfterInstall:
+    - location: ./codedeploy_scripts/afterInstall.sh
+      timeout: 300
+      runas: ubuntu
+
+  ApplicationStart:
+    - location: ./codedeploy_scripts/applicationStart.sh
+      timeout: 300
+      runas: ubuntu
