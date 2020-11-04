@@ -1,0 +1,83 @@
+name: On Push - Build and Deploy WebApp
+
+on:
+  push:
+    branches: [ master ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    env:
+      working-directory: webapp
+      ARTIFACT_NAME: csye6225-webapp-${{ github.run_number }}.zip
+      CODEDEPLOY_APPLICATION_NAME: csye6225-webapp
+      CODEDEPLOY_GROUP_NAME: csye6225-webapp-deployment
+      AWS_REGION: us-east-1
+
+    strategy:
+      matrix:
+        node-version: [12.x]
+
+    steps:
+
+    - uses: actions/checkout@v2
+
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v1
+      with:
+        node-version: ${{ matrix.node-version }}
+
+    - name: Install Dependencies
+      run: |
+        sudo apt-get update && sudo apt-get install -y wget zip unzip
+
+    - name: Install awscli
+      run: |
+        curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+        unzip awscliv2.zip
+        sudo ./aws/install
+
+    - name: Run Unit Tests
+      run: npm run test
+      working-directory: ${{ env.working-directory }}
+
+    - name: Built Deployment Artifacts
+      run: |
+        rm -r codedeploy_artifact
+        mkdir codedeploy_artifact
+        zip -r ${{ env.ARTIFACT_NAME }} webapp codedeploy/*.sh appspec.yml --exclude webapp/.env
+        pwd
+        ls -al
+        mv ${{ env.ARTIFACT_NAME }} codedeploy_artifact
+        cd codedeploy_artifact
+        pwd
+        ls -al
+        cd ..
+        pwd
+        ls -al
+
+    - name: Configuring AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_KEY }}
+        aws-region: ${{ env.AWS_REGION }}
+
+    - name: Upload Artifact Zip to S3
+      run: |
+        aws s3 sync ./codedeploy_artifact s3://${{ secrets.CODEDEPLOY_BUCKET }}
+
+    - name: Make CodeDeploy API call
+      run: |
+        echo $(aws deploy create-deployment \
+        --application-name ${{ env.CODEDEPLOY_APPLICATION_NAME }} \
+        --deployment-config-name CodeDeployDefault.AllAtOnce \
+        --deployment-group-name ${{ env.CODEDEPLOY_GROUP_NAME }} \
+        --s3-location bucket=${{ secrets.CODEDEPLOY_BUCKET }},bundleType=zip,key=${{ env.ARTIFACT_NAME }} \
+        --region ${{ env.AWS_REGION }} \
+        --output json) > deployment_id.txt
+        ls -al
+        deployment_id = $(jq --raw-output '.deploymentId' deployment_id.txt)
+        aws deploy wait deployment-successful --deployment-id $deployment_id
+        
