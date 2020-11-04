@@ -38,10 +38,6 @@ jobs:
         unzip awscliv2.zip
         sudo ./aws/install
 
-    - name: Run Unit Tests
-      run: npm run test
-      working-directory: ${{ env.working-directory }}
-
     - name: Built Deployment Artifacts
       run: |
         rm -r codedeploy_artifact
