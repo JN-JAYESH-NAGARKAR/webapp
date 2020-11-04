@@ -9,7 +9,7 @@ jobs:
 
     runs-on: ubuntu-latest
     env:
-      working-directory: webapp
+      
       ARTIFACT_NAME: csye6225-webapp-${{ github.run_number }}.zip
       CODEDEPLOY_APPLICATION_NAME: csye6225-webapp
       CODEDEPLOY_GROUP_NAME: csye6225-webapp-deployment
