@@ -9,7 +9,7 @@ jobs:
 
     runs-on: ubuntu-latest
     env:
-      
+
       ARTIFACT_NAME: csye6225-webapp-${{ github.run_number }}.zip
       CODEDEPLOY_APPLICATION_NAME: csye6225-webapp
       CODEDEPLOY_GROUP_NAME: csye6225-webapp-deployment
@@ -42,7 +42,7 @@ jobs:
       run: |
       
         mkdir codedeploy_artifact
-        zip -r ${{ env.ARTIFACT_NAME }} webapp codedeploy/*.sh appspec.yml --exclude webapp/.env
+        zip -r ${{ env.ARTIFACT_NAME }} webapp codedeploy_scripts/*.sh appspec.yml --exclude webapp/.env
         pwd
         ls -al
         mv ${{ env.ARTIFACT_NAME }} codedeploy_artifact
