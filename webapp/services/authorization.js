@@ -1,5 +1,6 @@
 const auth = require('basic-auth');
 const bcrypt = require('bcrypt');
+const logger = require('../config/logger');
 
 const authorizeAndGetUser = async (req,res, User) => {
 
@@ -10,6 +11,7 @@ const authorizeAndGetUser = async (req,res, User) => {
         res.status(401).send({
             message: "Please Login!"
         });
+        logger.error("Not logged in..!");
 
     } else {
 
@@ -30,6 +32,7 @@ const authorizeAndGetUser = async (req,res, User) => {
                 res.status(401).send({
                     Unauthorized: "Username doesn't exists"
                 });
+                logger.error("Username doesn't exists..!");
 
             } else {
 
@@ -38,6 +41,8 @@ const authorizeAndGetUser = async (req,res, User) => {
                     res.status(401).send({
                         Unauthorized: "Invalid Credentials"
                     });
+
+                    logger.error("Invalid Credentials..!");
 
                 } else {
 
@@ -51,6 +56,7 @@ const authorizeAndGetUser = async (req,res, User) => {
                 res.status(400).send({
                     message: "Please enter Username and Password!"
                 });
+                logger.error("Incomplete Login Information..!");
             }
 
         }

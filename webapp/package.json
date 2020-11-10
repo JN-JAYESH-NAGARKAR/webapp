@@ -4,6 +4,7 @@
   "description": "## Technology Stack * Backend Technology: Node JS * Framework: Express * Database: MySQL",
   "main": "app.js",
   "dependencies": {
+    "app-root-path": "^3.0.0",
     "aws-sdk": "^2.773.0",
     "basic-auth": "^2.0.1",
     "bcrypt": "^5.0.0",
@@ -21,9 +22,11 @@
     "path": "^0.12.7",
     "regex": "^0.1.1",
     "sequelize": "^6.3.5",
+    "statsd-client": "^0.4.5",
     "supertest": "^5.0.0",
     "underscore": "^1.11.0",
-    "uuidv4": "^6.2.3"
+    "uuidv4": "^6.2.3",
+    "winston": "^3.3.3"
   },
   "devDependencies": {
     "mocha": "^8.1.3"

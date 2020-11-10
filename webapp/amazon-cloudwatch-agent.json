@@ -9,7 +9,7 @@
           "collect_list": [
             {
               "file_path": "/home/ubuntu/webapp/webapp/logs/app.log",
-              "log_group_name": "csye6225_Spring_2020",
+              "log_group_name": "csye6225_Fall_2020",
               "log_stream_name": "webapp"
             }
           ]
