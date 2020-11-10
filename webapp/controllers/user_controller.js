@@ -1,13 +1,21 @@
 const uuidv4 = require('uuidv4');
+const bcrypt = require('bcrypt');
+const auth = require('basic-auth');
+const SDC = require('statsd-client');
 const db = require('../database/sequelize');
 const validator = require('../services/validator');
 const authorization = require('../services/authorization');
-const bcrypt = require('bcrypt');
-const auth = require('basic-auth');
+const logger = require('../config/logger');
 const User = db.user;
+
+const sdc = new SDC({host: 'localhost', port: 8125});
 
 
 exports.createUser = async (req, res) => {
+
+    let start = Date.now();
+    logger.info("User CREATE Call");
+    sdc.increment('endpoint.user.http.post');
 
     let username = req.body.username;
     let password = req.body.password;
@@ -24,6 +32,8 @@ exports.createUser = async (req, res) => {
                     message: "User already exists."
                 });
 
+                logger.error("User already exists..!");
+
             } else {
 
                 let passwordErrors = await validator.validatePassword(password);
@@ -32,6 +42,8 @@ exports.createUser = async (req, res) => {
                     res.status(400).send({
                         message: passwordErrors
                     });
+
+                    logger.error("Password is not valid..!");
 
                 } else {
 
@@ -45,7 +57,7 @@ exports.createUser = async (req, res) => {
                         last_name: last_name,
                         password: hashedPassword,
                         username: username
-                };
+                    };
         
                     User.create(user)
                         .then(data => {
@@ -53,12 +65,18 @@ exports.createUser = async (req, res) => {
                             let temp = data.toJSON();
                             delete temp.password;
                             res.status(201).send(temp);
+
+                            logger.info("User has been created..!");
+                            let end = Date.now();
+                            var elapsed = end - start;
+                            sdc.timing('timer.self.http.post', elapsed);
                         })
                         .catch(err => {
 
                             res.status(500).send({
                                 message: err.message || "Some error occurred while creating the User."
                             });
+                            logger.error(err.message);
                         });
                 }
             }
@@ -68,6 +86,7 @@ exports.createUser = async (req, res) => {
             res.status(400).send({
                 message: "Invalid Username."
             });
+            logger.error("Username is not valid..!");
         }
         
     } else {
@@ -75,11 +94,15 @@ exports.createUser = async (req, res) => {
         res.status(400).send({
             message: "Please Enter all fields Username, Password, First_Name, Last_Name."
         });
+        logger.error("Incomplete Information..!");
     }
 }
 
 exports.getUser = async (req, res) => {
 
+    let start = Date.now();
+    logger.info("User SELF Call");
+    sdc.increment('endpoint.self.http.get');
     let user = await authorization.authorizeAndGetUser(req, res, User);
 
     if(user){
@@ -88,11 +111,19 @@ exports.getUser = async (req, res) => {
         delete user.password;
         res.status(200).send(user);
 
-    }
-    
+        logger.info("Self Information Retrived..!");
+        let end = Date.now();
+        var elapsed = end - start;
+        sdc.timing('timer.self.http.get', elapsed);
+
+    }   
 }
 
 exports.updateUser = async (req, res) => {
+
+    let start = Date.now();
+    logger.info("User UPDATE Call");
+    sdc.increment('endpoint.user.http.put');
 
     let password = req.body.password;
     let first_name = req.body.first_name;
@@ -107,11 +138,13 @@ exports.updateUser = async (req, res) => {
             res.status(400).send({
                 message: "Cannot update Username, Account Updated & Account_Created field."
             });
+            logger.error("Not Updateable Fields..!");
         } else if(!password && !first_name && !last_name){
     
             res.status(400).send({
                 message: "Atleast one field required to update."
             });
+            logger.error("Incomplete Information..!");
         } else {
 
             if(!password){
@@ -121,6 +154,7 @@ exports.updateUser = async (req, res) => {
                     res.status(400).send({
                         message: "Password cannot be empty!"
                     });
+                    logger.error("Password cannot be empty..!");
                     return;
                 } 
             } else {
@@ -130,6 +164,7 @@ exports.updateUser = async (req, res) => {
                         res.status(400).send({
                             message: passwordErrors
                         })
+                        logger.error("Password is not valid..!");
                     } else {
                         const hashedPassword = await bcrypt.hash(password,10);
                         user.password = hashedPassword;
@@ -143,7 +178,7 @@ exports.updateUser = async (req, res) => {
                     res.status(400).send({
                         message: "First Name cannot be empty!"
                     });
-
+                    logger.error("First Name cannot be empty..!");
                     return;
     
                 } 
@@ -160,7 +195,7 @@ exports.updateUser = async (req, res) => {
                     res.status(400).send({
                         message: "Last Name cannot be empty!"
                     });
-
+                    logger.error("Last Name cannot be empty..!");
                     return;
     
                 } 
@@ -175,6 +210,11 @@ exports.updateUser = async (req, res) => {
                 message: "Updated Successfully."
             });
 
+            logger.info("User Information has been updated..!");
+            let end = Date.now();
+            var elapsed = end - start;
+            sdc.timing('timer.user.http.put', elapsed);
+
         }
 
     }
@@ -182,6 +222,10 @@ exports.updateUser = async (req, res) => {
 }
 
 exports.getUserInfo = async (req, res) => {
+
+    let start = Date.now();
+    logger.info("User GET Call");
+    sdc.increment('endpoint.user.http.get');
 
     let user = await User.findOne({
         where: {
@@ -195,10 +239,16 @@ exports.getUserInfo = async (req, res) => {
         delete user.password;
         res.status(200).send(user);
 
+        logger.info("User Information Retrived..!");
+        let end = Date.now();
+        var elapsed = end - start;
+        sdc.timing('timer.user.http.get', elapsed);
+
     } else {
         res.status(404).send({
             message: "User doesnot exists!"
         });
+        logger.error("User doesnot exists..!");
     }
 }
 
