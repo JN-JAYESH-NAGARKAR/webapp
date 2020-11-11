@@ -4,6 +4,7 @@ const logger = require('../config/logger');
 
 const authorizeAndGetUser = async (req,res, User) => {
 
+    logger.info("Authorizing and Retrieving User..!");
     const credentials = auth(req);
 
     if(!credentials){

@@ -1,19 +1,30 @@
 const v4 = require('uuidv4');
+const SDC = require('statsd-client');
 const db = require('../database/sequelize');
 const validator = require('../services/validator');
 const authorization = require('../services/authorization');
 const questionService = require('../services/question_answer');
 const fileService = require('../services/file');
 const s3 = require('../controllers/file_controller').s3;
+const logger = require('../config/logger');
+const dbConfig = require("../config/db.config.js");
 const User = db.user;
 const Question = db.question;
 const Category = db.category;
 
+const sdc = new SDC({host: dbConfig.METRICS_HOSTNAME, port: dbConfig.METRICS_PORT});
+
 exports.createQuestion = async (req, res) => {
+
+    let start = Date.now();
+    logger.info("Question POST Call");
+    sdc.increment('endpoint.question.http.post');
 
     let user = await authorization.authorizeAndGetUser(req, res, User);
 
     if(user){
+
+        logger.info("User Authorized..!");
 
         if(req.body.question_text){
 
@@ -34,6 +45,11 @@ exports.createQuestion = async (req, res) => {
                 const result = await questionService.findQuestionById(question.question_id);
             
                 res.status(201).send(result.toJSON());
+
+                logger.info("Question has been posted..!");
+                let end = Date.now();
+                var elapsed = end - start;
+                sdc.timing('timer.question.http.post', elapsed);
 
             } else {
 
@@ -71,6 +87,7 @@ exports.createQuestion = async (req, res) => {
                             res.status(400).send({
                                 message: "Category Name cannot have special characters."
                             });
+                            logger.error("Invalid Category Name - Cannot have special characters");
     
                         }  
                     }
@@ -78,6 +95,11 @@ exports.createQuestion = async (req, res) => {
                     const result = await questionService.findQuestionById(question.question_id);
     
                     res.status(201).send(result.toJSON());
+
+                    logger.info("Question has been posted..!");
+                    let end = Date.now();
+                    var elapsed = end - start;
+                    sdc.timing('timer.question.http.post', elapsed);
     
                 }
             }
@@ -87,33 +109,58 @@ exports.createQuestion = async (req, res) => {
             res.status(400).send({
                 message: "Please Enter Question Text."
             });
+            logger.error("Incomplete Information - Missing Question Text");
         } 
     }
 }
 
 exports.getAllQuestions = async (req, res) => {
 
-   const questions = await questionService.findAllQuestions();
+    let start = Date.now();
+    logger.info("Questions GET ALL Call");
+    sdc.increment('endpoint.questions.http.get');
 
-   res.status(200).send(questions);
+    const questions = await questionService.findAllQuestions();
+
+    res.status(200).send(questions);
+
+    logger.info("All Questions Retrieved..");
+    let end = Date.now();
+    var elapsed = end - start;
+    sdc.timing('timer.questions.http.get', elapsed);
 
 }
 
 exports.getAQuestion = async (req, res) => {
 
+    let start = Date.now();
+    logger.info("Question GET Call");
+    sdc.increment('endpoint.question.http.get');
+
     const question = await questionService.findQuestionById(req.params.questionID);
  
     if(question){
+
         res.status(200).send(question);
+        logger.info("Question Found..!");
+        let end = Date.now();
+        var elapsed = end - start;
+        sdc.timing('timer.question.http.get', elapsed);
+
     } else {
         res.status(404).send({
             message: "Question doesnot exists!"
-        })
+        });
+        logger.error("No such Question exists..!");
     }
 
  }
 
  exports.deleteAQuestion = async (req, res) => {
+
+    let start = Date.now();
+    logger.info("Question DELETE Call");
+    sdc.increment('endpoint.question.http.delete');
 
     let user = await authorization.authorizeAndGetUser(req, res, User);
 
@@ -125,6 +172,8 @@ exports.getAQuestion = async (req, res) => {
 
             if(question.user_id === user.id){
 
+                logger.info("User Authorized to Delete this Question..!");
+
                 let answers = await question.getAnswers();
 
                 if(answers.length !== 0){
@@ -132,6 +181,8 @@ exports.getAQuestion = async (req, res) => {
                     res.status(400).send({
                         message: "Cannot delete this question."
                     });
+
+                    logger.error("Cannot Delete Question - Answer Associated to it");
 
                 } else {
 
@@ -145,6 +196,10 @@ exports.getAQuestion = async (req, res) => {
 
                     if(result){
                         res.status(204).send();
+                        logger.info("Question Deleted..!");
+                        let end = Date.now();
+                        var elapsed = end - start;
+                        sdc.timing('timer.question.http.delete', elapsed);
                     } else {
                         res.status(500).send();
                     }
@@ -156,6 +211,7 @@ exports.getAQuestion = async (req, res) => {
                 res.status(403).send({
                     message: "Unauthorized to delete this question."
                 });
+                logger.error("User Unauthorized to Delete this Question..!");
 
             }
 
@@ -164,12 +220,17 @@ exports.getAQuestion = async (req, res) => {
             res.status(404).send({
                 message: "Question doesnot exists!"
             });
+            logger.error("No such Question exists..!");
         }
     }
     
 }
 
 exports.updateAQuestion = async (req, res) => {
+
+    let start = Date.now();
+    logger.info("Question UPDATE Call");
+    sdc.increment('endpoint.question.http.put');
 
     let user = await authorization.authorizeAndGetUser(req, res, User);
 
@@ -181,6 +242,8 @@ exports.updateAQuestion = async (req, res) => {
 
             if(question.user_id === user.id){
 
+                logger.info("User Authorized to Update this Question..!");
+
                 let question_text = req.body.question_text;
                 let categories = req.body.categories;
 
@@ -189,6 +252,8 @@ exports.updateAQuestion = async (req, res) => {
                     res.status(400).send({
                         message: "Question Text or Categories required for Update!"
                     });
+
+                    logger.error("Incomplete Information - Question Text or Category Required for Update");
         
                 } else {
 
@@ -199,6 +264,8 @@ exports.updateAQuestion = async (req, res) => {
                             res.status(400).send({
                                 message: "Question Text cannot be empty!"
                             });
+
+                            logger.error("Question Text cannot be empty..!");
 
                             return;
                         } 
@@ -238,6 +305,7 @@ exports.updateAQuestion = async (req, res) => {
                                     res.status(400).send({
                                         message: "Category Name cannot have special characters."
                                     });
+                                    logger.error("Invalid Category Name - Cannot have special characters");
 
                                 }
                     
@@ -252,6 +320,11 @@ exports.updateAQuestion = async (req, res) => {
                     res.status(204).send({
                         message: "Updated Successfully!"
                     });
+
+                    logger.info("Question Updated..!");
+                    let end = Date.now();
+                    var elapsed = end - start;
+                    sdc.timing('timer.question.http.put', elapsed);
                 }
 
             } else {
@@ -259,6 +332,7 @@ exports.updateAQuestion = async (req, res) => {
                 res.status(403).send({
                     message: "Unauthorized to update this question."
                 });
+                logger.error("User Unauthorized to Update this Question..!");
 
             }
 
@@ -267,6 +341,7 @@ exports.updateAQuestion = async (req, res) => {
             res.status(404).send({
                 message: "Question doesnot exists!"
             });
+            logger.error("No such Question exists..!");
 
         }
 

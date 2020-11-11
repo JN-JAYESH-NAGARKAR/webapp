@@ -1,8 +1,9 @@
 const v4 = require('uuidv4');
 const fs = require('fs');
-const db = require('../database/sequelize');
-const File = db.file;
 const _ = require('underscore');
+const db = require('../database/sequelize');
+const logger = require('../config/logger');
+const File = db.file;
 
 const questionFileUpload = async (source, targetName, s3, Question, fileId, req, res) => {
 

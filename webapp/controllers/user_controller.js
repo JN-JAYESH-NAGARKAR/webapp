@@ -6,9 +6,10 @@ const db = require('../database/sequelize');
 const validator = require('../services/validator');
 const authorization = require('../services/authorization');
 const logger = require('../config/logger');
+const dbConfig = require("../config/db.config.js");
 const User = db.user;
 
-const sdc = new SDC({host: 'localhost', port: 8125});
+const sdc = new SDC({host: dbConfig.METRICS_HOSTNAME, port: dbConfig.METRICS_PORT});
 
 
 exports.createUser = async (req, res) => {
@@ -107,6 +108,8 @@ exports.getUser = async (req, res) => {
 
     if(user){
 
+        logger.info("User Authorized..!");
+
         user = user.toJSON();
         delete user.password;
         res.status(200).send(user);
@@ -133,18 +136,22 @@ exports.updateUser = async (req, res) => {
 
     if(user){
 
+        logger.info("User Authorized..!");
+
         if(req.body.username || req.body.account_updated || req.body.account_created){
 
             res.status(400).send({
                 message: "Cannot update Username, Account Updated & Account_Created field."
             });
-            logger.error("Not Updateable Fields..!");
+            logger.error("Non Updateable Fields Entered..!");
+
         } else if(!password && !first_name && !last_name){
     
             res.status(400).send({
                 message: "Atleast one field required to update."
             });
             logger.error("Incomplete Information..!");
+
         } else {
 
             if(!password){
@@ -234,6 +241,8 @@ exports.getUserInfo = async (req, res) => {
     });
 
     if(user){
+
+        logger.info("User Found..!");
 
         user = user.toJSON();
         delete user.password;
