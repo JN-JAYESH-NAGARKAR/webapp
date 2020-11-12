@@ -117,7 +117,7 @@ exports.getUser = async (req, res) => {
 
     let start = Date.now();
     logger.info("User SELF Call");
-    sdc.increment('endpoint.self.http.get');
+    sdc.increment('endpoint.user.self.http.get');
     
     let user = await authorization.authorizeAndGetUser(req, res, User);
 
@@ -134,7 +134,7 @@ exports.getUser = async (req, res) => {
 
     let end = Date.now();
     var elapsed = end - start;
-    sdc.timing('timer.self.http.get', elapsed);
+    sdc.timing('timer.user.self.http.get', elapsed);
 }
 
 exports.updateUser = async (req, res) => {

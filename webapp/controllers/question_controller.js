@@ -131,7 +131,7 @@ exports.getAllQuestions = async (req, res) => {
 
     let start = Date.now();
     logger.info("Questions GET ALL Call");
-    sdc.increment('endpoint.questions.http.get');
+    sdc.increment('endpoint.question.http.getAll');
 
     const questions = await questionService.findAllQuestions();
 
@@ -140,7 +140,7 @@ exports.getAllQuestions = async (req, res) => {
     logger.info("All Questions Retrieved..");
     let end = Date.now();
     var elapsed = end - start;
-    sdc.timing('timer.questions.http.get', elapsed);
+    sdc.timing('timer.question.http.getAll', elapsed);
 
 }
 

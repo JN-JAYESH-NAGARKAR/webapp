@@ -41,7 +41,7 @@ const findAllQuestions = async () => {
 
     let query_end = Date.now();
     var query_elapsed = query_end - query_start;
-    sdc.timing('query.questions.get', query_elapsed);
+    sdc.timing('query.question.getAll', query_elapsed);
 
     return questions;
 
