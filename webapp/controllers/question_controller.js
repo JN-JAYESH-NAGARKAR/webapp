@@ -219,11 +219,11 @@ exports.getAQuestion = async (req, res) => {
                         res.status(500).send();
                     }
 
-                }
+                    let query_end = Date.now();
+                    var query_elapsed = query_end - query_start;
+                    sdc.timing('query.question.delete', query_elapsed);
 
-                let query_end = Date.now();
-                var query_elapsed = query_end - query_start;
-                sdc.timing('query.question.delete', query_elapsed);
+                }
 
             } else {
 
