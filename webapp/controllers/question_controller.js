@@ -189,8 +189,6 @@ exports.getAQuestion = async (req, res) => {
 
                 logger.info("User Authorized to Delete this Question..!");
 
-                let query_start = Date.now();
-
                 let answers = await question.getAnswers();
 
                 if(answers.length !== 0){
@@ -202,6 +200,8 @@ exports.getAQuestion = async (req, res) => {
                     logger.error("Cannot Delete Question - Answer Associated to it");
 
                 } else {
+
+                    let query_start = Date.now();
 
                     let question_attachments = await question.getAttachments();
 
