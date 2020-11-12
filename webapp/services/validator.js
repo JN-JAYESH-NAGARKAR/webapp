@@ -1,8 +1,8 @@
 const emailValidator = require("email-validator");
 const passwordValidator = require("password-validator");
+const logger = require('../config/logger');
 
 var schema = new passwordValidator();
-
 
 schema
 .is().min(8)
@@ -25,9 +25,9 @@ const validateCategory = category => {
 const validateEmail = email => {
 
     if(emailValidator.validate(email))
-            return true;
-        else
-            return false;
+        return true;
+    else
+        return false;
 }
 
 const validatePassword = password => {
@@ -74,14 +74,13 @@ const checkIfCategoryEmpty = async (req, res, inputCategories) => {
             res.status(400).send({
                 message: "Category Name cannot be empty!"
             });
-
+            logger.error("Category Name cannot be empty..!");
             return false;
 
         }
     }
-
+    
     return true;
-
 }
 
 module.exports = { validateEmail, validatePassword, validateCategory, checkIfCategoryEmpty};

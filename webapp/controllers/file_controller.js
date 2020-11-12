@@ -1,5 +1,6 @@
 const v4 = require('uuidv4');
 const express = require('express');
+const SDC = require('statsd-client');
 const db = require('../database/sequelize');
 const authorization = require('../services/authorization');
 const questionService = require('../services/question_answer');
@@ -7,11 +8,14 @@ const answerService = require('../services/question_answer');
 const fileService = require('../services/file');
 const multer  = require('multer');
 const AWS = require('aws-sdk');
-const multerS3 = require('multer-s3');
 const path = require('path');
+const logger = require('../config/logger');
+const dbConfig = require("../config/db.config.js");
 const User = db.user;
 const router = express.Router();
 const fs = require('fs');
+
+const sdc = new SDC({host: dbConfig.METRICS_HOSTNAME, port: dbConfig.METRICS_PORT});
 
 //setting the credentials
 //The region should be the region of the bucket that you created
@@ -25,31 +29,6 @@ AWS.config.update({
 const s3 = new AWS.S3();
 const bucket = process.env.AWS_BUCKET_NAME;
 
-// let upload = multer({
-//   storage: multerS3({
-//       s3: s3,
-//       bucket: bucket,
-//       contentType: multerS3.AUTO_CONTENT_TYPE,
-//       key: function (req, file, cb) {
-//           cb(null, file.originalname);
-//       }
-//   }),
-//   limits:{ fileSize: 2000000 }, 
-//   fileFilter: function (req, file, cb) {
-//     // Allowed Extensions
-//     const filetypes = /jpeg|jpg|png/;
-//     // Check Extensions
-//     const extname = filetypes.test( path.extname( file.originalname ).toLowerCase());
-//     // Check Mime Type
-//     const mimetype = filetypes.test( file.mimetype );
-
-//     if(mimetype && extname)
-//           return cb(null, true);
-//       else
-//           return cb(new Error('Unsupported File Format'), false);
-//   }
-// });
-
 const storage = multer.diskStorage({
     destination : 'uploads/',
     filename: function(req, file, cb) {
@@ -62,6 +41,10 @@ const upload = multer({storage});
 //Attach a file to Question
 router.post('/:questionID/file', upload.single('image'), async (req, res) => {
 
+    let start = Date.now();
+    logger.info("Question File POST Call");
+    sdc.increment('endpoint.question.file.http.post');
+
     let user = await authorization.authorizeAndGetUser(req, res, User);
 
     if(user){
@@ -72,10 +55,13 @@ router.post('/:questionID/file', upload.single('image'), async (req, res) => {
 
             if(question.user_id === user.id){
 
+                logger.info("User Authorized to Add File this Question..!");
+
                 if(!req.file){
                     res.status(400).send({
                         message: 'No File Uploaded!'
                     });
+                    logger.error("No File Uploaded..!");
                 }
                  
                 const filetypes = /jpeg|jpg|png/;
@@ -84,9 +70,12 @@ router.post('/:questionID/file', upload.single('image'), async (req, res) => {
 
                 
                 if(!mimetype && !extname){
+
                     res.status(400).send({
                         message: 'Unsupported File Type'
                     });
+                    logger.error("Unsupported File Format..!");
+
                 } else {
 
                     const fileId = v4.uuid();
@@ -99,39 +88,12 @@ router.post('/:questionID/file', upload.single('image'), async (req, res) => {
 
                 fs.unlink(req.file.path, () => {});
 
-
-                // const imageUpload = upload.single('image');
-                // await imageUpload(req, res, async (err, data) => {
-
-                //     if(err){
-                //         res.status(400).send({
-                //             Error: 'Unsupported File Format'
-                //         });
-                //     }
-
-                //     if(!req.file){
-                //         res.status(400).send({
-                //             message: 'No File Uploaded!'
-                //         });
-                //     }
-
-                //     const params = {
-                //         Bucket: process.env.AWS_BUCKET_NAME,
-                //         Key: req.file.originalname,
-                //     };
-
-
-                //     const d = await s3.headObject(params).promise();
-                //     res.status(200).send(d);
-
-                // });
-
             } else {
 
                 res.status(401).send({
                     message: "Unauthorized to add image to this question."
                 });
-
+                logger.error("User Unauthorized to Add File to this Question..!");
             }
 
         } else {
@@ -139,12 +101,21 @@ router.post('/:questionID/file', upload.single('image'), async (req, res) => {
             res.status(404).send({
                 message: "Question doesnot exists!"
             });
+            logger.error("No such Question exists..!");
         }
     }
+    
+    let end = Date.now();
+    var elapsed = end - start;
+    sdc.timing('timer.question.file.http.post', elapsed);
 });
 
 //Delete a file to Question
 router.delete('/:questionID/file/:fileID', async (req, res) => {
+
+    let start = Date.now();
+    logger.info("Question File DELETE Call");
+    sdc.increment('endpoint.question.file.http.delete');
 
     let user = await authorization.authorizeAndGetUser(req, res, User);
 
@@ -156,7 +127,15 @@ router.delete('/:questionID/file/:fileID', async (req, res) => {
 
             if(question.user_id === user.id){
 
+                logger.info("User Authorized to Delete this Question File..!");
+
+                let query_start = Date.now();
+
                 const file = await question.getAttachments({ where: {file_id: req.params.fileID}});
+
+                let query_end = Date.now();
+                var query_elapsed = query_end - query_start;
+                sdc.timing('query.files.get', query_elapsed);
 
                 if(file.length !== 0){
 
@@ -167,30 +146,30 @@ router.delete('/:questionID/file/:fileID', async (req, res) => {
                     if(result){
 
                         res.status(204).send();
+                        logger.info("Question File Deleted..!");
 
                     } else {
 
                         res.status(500).send({
                             message: err
                          });
+                         logger.error(err);
                     }
-
                    
                 } else{
 
                     res.status(404).send({
                         message: "File doesnot exists!"
                     });
-
+                    logger.error("No such Question File exists..!");
                 }
-                 
 
             } else {
 
                 res.status(401).send({
                     message: "Unauthorized to delete image to this question."
                 });
-
+                logger.error("User Unauthorized to Delete this Question File..!");
             }
 
         } else {
@@ -198,13 +177,22 @@ router.delete('/:questionID/file/:fileID', async (req, res) => {
             res.status(404).send({
                 message: "Question doesnot exists!"
             });
+            logger.error("No such Question exists..!");
         }
     }
+
+    let end = Date.now();
+    var elapsed = end - start;
+    sdc.timing('timer.question.file.http.delete', elapsed);
 });
 
 
 //Attach a file to Answer
 router.post('/:questionID/answer/:answerID/file', upload.single('image'), async (req, res) => {
+
+    let start = Date.now();
+    logger.info("Answer File POST Call");
+    sdc.increment('endpoint.answer.file.http.post');
 
     let user = await authorization.authorizeAndGetUser(req, res, User);
 
@@ -220,10 +208,14 @@ router.post('/:questionID/answer/:answerID/file', upload.single('image'), async 
 
                 if(answer.user_id === user.id){
 
+                    logger.info("User Authorized to Add File this Answer..!");
+
                     if(!req.file){
+
                         res.status(400).send({
                             message: 'No File Uploaded!'
                         });
+                        logger.error("No File Uploaded..!");
                     }
 
                     const filetypes = /jpeg|jpg|png/;
@@ -231,9 +223,12 @@ router.post('/:questionID/answer/:answerID/file', upload.single('image'), async 
                     const mimetype = filetypes.test( req.file.mimetype );
     
                     if(!mimetype && !extname){
+
                         res.status(400).send({
                             message: 'Unsupported File Type'
                         });
+                        logger.error("Unsupported File Format..!");
+
                     } else {
     
                         const fileId = v4.uuid();
@@ -241,7 +236,7 @@ router.post('/:questionID/answer/:answerID/file', upload.single('image'), async 
                         const fileName = req.params.answerID + "/" + fileId + "/" + path.basename( req.file.originalname, path.extname( req.file.originalname ) ) + path.extname( req.file.originalname);
 
                         await fileService.answerFileUpload(req.file.path, fileName, s3, answer, fileId, req, res);
-    
+
                     }
     
                     fs.unlink(req.file.path, () => {});
@@ -251,7 +246,7 @@ router.post('/:questionID/answer/:answerID/file', upload.single('image'), async 
                     res.status(401).send({
                         message: "Unauthorized to add image to this answer."
                     });
-    
+                    logger.error("User Unauthorized to Add File to this Answer..!");
                 }
 
             } else {
@@ -259,20 +254,30 @@ router.post('/:questionID/answer/:answerID/file', upload.single('image'), async 
                 res.status(404).send({
                     message: "Answer doesnot exists!"
                 });
+                logger.error("No such Answer exists..!");
     
             }
-
+            
         } else {
 
             res.status(404).send({
                 message: "Question doesnot exists!"
             });
+            logger.error("No such Question exists..!");
         }
     }
+    
+    let end = Date.now();
+    var elapsed = end - start;
+    sdc.timing('timer.answer.file.http.post', elapsed);
 });
 
 //Delete a file to Answer
 router.delete('/:questionID/answer/:answerID/file/:fileID', async (req, res) => {
+
+    let start = Date.now();
+    logger.info("Answer File DELETE Call");
+    sdc.increment('endpoint.answer.file.http.delete');
 
     let user = await authorization.authorizeAndGetUser(req, res, User);
 
@@ -288,7 +293,15 @@ router.delete('/:questionID/answer/:answerID/file/:fileID', async (req, res) => 
 
                 if(answer.user_id === user.id){
 
+                    logger.info("User Authorized to Delete this Answer File..!");
+
+                    let query_start = Date.now();
+
                     const file = await answer.getAttachments({ where: {file_id: req.params.fileID}});
+
+                    let query_end = Date.now();
+                    var query_elapsed = query_end - query_start;
+                    sdc.timing('query.files.get', query_elapsed);
 
                     if(file.length !== 0){
 
@@ -299,12 +312,14 @@ router.delete('/:questionID/answer/:answerID/file/:fileID', async (req, res) => 
                         if(result){
                         
                             res.status(204).send();
+                            logger.info("Answer File Deleted..!");
     
                         } else {
     
                             res.status(500).send({
                                 message: err
                              });
+                             logger.error(err);
                         }
 
                     } else{
@@ -312,7 +327,7 @@ router.delete('/:questionID/answer/:answerID/file/:fileID', async (req, res) => 
                         res.status(404).send({
                             message: "File doesnot exists!"
                         });
-
+                        logger.error("No such Answer File exists..!");
                     }
 
                 } else {
@@ -320,24 +335,29 @@ router.delete('/:questionID/answer/:answerID/file/:fileID', async (req, res) => 
                     res.status(401).send({
                         message: "Unauthorized to delete image to this answer."
                     });
-
+                    logger.error("User Unauthorized to Delete this Answer File..!");
                 }
+
             } else {
     
                 res.status(404).send({
                     message: "Answer doesnot exists!"
                 });
-    
+                logger.error("No such Answer exists..!");
             }
-
 
         } else {
 
             res.status(404).send({
                 message: "Question doesnot exists!"
             });
+            logger.error("No such Question exists..!");
         }
     }
+
+    let end = Date.now();
+    var elapsed = end - start;
+    sdc.timing('timer.answer.file.http.delete', elapsed);
 });
 
 module.exports = {router, s3};
