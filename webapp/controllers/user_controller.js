@@ -26,7 +26,14 @@ exports.createUser = async (req, res) => {
     if(username && password && first_name && last_name){
         if(validator.validateEmail(username)){
 
+            let query_start_1 = Date.now();
+
             let alreadyExists = await User.findOne({ where: {username: username}});
+
+            let query_end_1 = Date.now();
+            let query_elapsed_1 = query_end_1 - query_start_1;
+            sdc.timing('query.user.get', query_elapsed_1);
+
             if(alreadyExists != null){
 
                 res.status(409).send({
@@ -44,12 +51,14 @@ exports.createUser = async (req, res) => {
                         message: passwordErrors
                     });
 
-                    logger.error("Password is not valid..!");
+                    logger.error("Password is not valid");
 
                 } else {
 
                     const salt = await bcrypt.genSalt(10);
                     const hashedPassword = await bcrypt.hash(password,salt);
+
+                    let query_start = Date.now();
 
                     const user = {
 
@@ -59,7 +68,7 @@ exports.createUser = async (req, res) => {
                         password: hashedPassword,
                         username: username
                     };
-        
+    
                     User.create(user)
                         .then(data => {
 
@@ -68,9 +77,6 @@ exports.createUser = async (req, res) => {
                             res.status(201).send(temp);
 
                             logger.info("User has been created..!");
-                            let end = Date.now();
-                            var elapsed = end - start;
-                            sdc.timing('timer.self.http.post', elapsed);
                         })
                         .catch(err => {
 
@@ -79,6 +85,10 @@ exports.createUser = async (req, res) => {
                             });
                             logger.error(err.message);
                         });
+
+                        let query_end = Date.now();
+                        let query_elapsed = query_end - query_start;
+                        sdc.timing('query.user.create', query_elapsed);
                 }
             }
 
@@ -97,6 +107,10 @@ exports.createUser = async (req, res) => {
         });
         logger.error("Incomplete Information..!");
     }
+
+    let end = Date.now();
+    var elapsed = end - start;
+    sdc.timing('timer.user.http.post', elapsed);
 }
 
 exports.getUser = async (req, res) => {
@@ -104,6 +118,7 @@ exports.getUser = async (req, res) => {
     let start = Date.now();
     logger.info("User SELF Call");
     sdc.increment('endpoint.self.http.get');
+    
     let user = await authorization.authorizeAndGetUser(req, res, User);
 
     if(user){
@@ -115,11 +130,11 @@ exports.getUser = async (req, res) => {
         res.status(200).send(user);
 
         logger.info("Self Information Retrived..!");
-        let end = Date.now();
-        var elapsed = end - start;
-        sdc.timing('timer.self.http.get', elapsed);
-
     }   
+
+    let end = Date.now();
+    var elapsed = end - start;
+    sdc.timing('timer.self.http.get', elapsed);
 }
 
 exports.updateUser = async (req, res) => {
@@ -212,19 +227,23 @@ exports.updateUser = async (req, res) => {
 
             }
         
+            let query_start = Date.now();
             await user.save();
+            let query_end = Date.now();
+            let query_elapsed = query_end - query_start;
+            sdc.timing('query.user.save', query_elapsed);
+
             res.status(204).send({
                 message: "Updated Successfully."
             });
 
             logger.info("User Information has been updated..!");
-            let end = Date.now();
-            var elapsed = end - start;
-            sdc.timing('timer.user.http.put', elapsed);
-
         }
-
     }
+
+    let end = Date.now();
+    var elapsed = end - start;
+    sdc.timing('timer.user.http.put', elapsed);
 
 }
 
@@ -234,11 +253,15 @@ exports.getUserInfo = async (req, res) => {
     logger.info("User GET Call");
     sdc.increment('endpoint.user.http.get');
 
+    let query_start = Date.now();
     let user = await User.findOne({
         where: {
             id: req.params.id
         }
     });
+    let query_end = Date.now();
+    let query_elapsed = query_end - query_start;
+    sdc.timing('query.user.get', query_elapsed);
 
     if(user){
 
@@ -249,16 +272,17 @@ exports.getUserInfo = async (req, res) => {
         res.status(200).send(user);
 
         logger.info("User Information Retrived..!");
-        let end = Date.now();
-        var elapsed = end - start;
-        sdc.timing('timer.user.http.get', elapsed);
-
+        
     } else {
         res.status(404).send({
             message: "User doesnot exists!"
         });
         logger.error("User doesnot exists..!");
     }
+
+    let end = Date.now();
+    var elapsed = end - start;
+    sdc.timing('timer.user.http.get', elapsed);
 }
 
 //Mock Functions
@@ -303,9 +327,8 @@ exports.creationTest = async (req, res) => {
                 res.status(201).send({
                     message: "User created successfully.",
                 });
-
             }
-        
+
         } else {
 
             res.status(400).send({

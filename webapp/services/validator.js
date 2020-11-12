@@ -79,9 +79,8 @@ const checkIfCategoryEmpty = async (req, res, inputCategories) => {
 
         }
     }
-
+    
     return true;
-
 }
 
 module.exports = { validateEmail, validatePassword, validateCategory, checkIfCategoryEmpty};

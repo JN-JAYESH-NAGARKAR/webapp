@@ -33,6 +33,8 @@ exports.postAnswer = async (req, res) => {
                 
                 logger.info("Question found..!");
 
+                let query_start = Date.now();
+
                 let answer = await Answer.create({
 
                     answer_id: v4.uuid(),
@@ -43,14 +45,15 @@ exports.postAnswer = async (req, res) => {
                 await question.addAnswer(answer);
                 await user.addAnswer(answer);
 
+                let query_end = Date.now();
+                let query_elapsed = query_end - query_start;
+                sdc.timing('query.answer.create', query_elapsed);
+
                 const result = await answerService.findAnswerById(answer.answer_id, req.params.questionID);
     
                 res.status(201).send(result.toJSON());
 
                 logger.info("Answer has been posted..!");
-                let end = Date.now();
-                var elapsed = end - start;
-                sdc.timing('timer.answer.http.post', elapsed);
                 
             } else {
                 
@@ -66,9 +69,12 @@ exports.postAnswer = async (req, res) => {
                 message: "Please Enter Answer Text."
             });
             logger.error("Incomplete Information - Missing Answer Text");
-
         }
     } 
+
+    let end = Date.now();
+    var elapsed = end - start;
+    sdc.timing('timer.answer.http.post', elapsed);
 }
 
 exports.getAnswer = async (req, res) => {
@@ -86,20 +92,26 @@ exports.getAnswer = async (req, res) => {
         if(answer){
 
             res.status(200).send(answer);
+            logger.info("Answer Found..!");
 
         } else {
 
             res.status(404).send({
                 message: "Answer doesnot exists!"
             });
-
+            logger.error("No such Answer exists..!");
         }
 
     } else {
         res.status(404).send({
             message: "Question doesnot exists!"
         });
+        logger.error("No such Question exists..!");
     }
+
+    let end = Date.now();
+    var elapsed = end - start;
+    sdc.timing('timer.answer.http.get', elapsed);
 }
 
 exports.deleteAnswer = async (req, res) => {
@@ -124,6 +136,8 @@ exports.deleteAnswer = async (req, res) => {
 
                     logger.info("User Authorized to Delete this Answer..!");
                     
+                    let query_start = Date.now();
+
                     let attachments = await answer.getAttachments();
 
                     attachments.forEach(async element => {
@@ -131,16 +145,18 @@ exports.deleteAnswer = async (req, res) => {
                     });
                     let result = await Answer.destroy({ where: {answer_id: answer.answer_id} });
 
+                    let query_end = Date.now();
+                    var query_elapsed = query_end - query_start;
+                    sdc.timing('query.answer.delete', query_elapsed);
+
                     if(result){
+
                         res.status(204).send();
                         logger.info("Answer Deleted..!");
-                        let end = Date.now();
-                        var elapsed = end - start;
-                        sdc.timing('timer.answer.http.delete', elapsed);
+
                     } else {
                         res.status(500).send();
                     }
-
 
                 } else {
                     
@@ -148,28 +164,28 @@ exports.deleteAnswer = async (req, res) => {
                         message: "Unauthorized to delete this answer."
                     });
                     logger.error("User Unauthorized to Delete this Answer..!");
-    
                 }
-    
+
             } else {
     
                 res.status(404).send({
                     message: "Answer doesnot exists!"
                 });
                 logger.error("No such Answer exists..!");
-    
             }
-    
+
         } else {
 
             res.status(404).send({
                 message: "Question doesnot exists!"
             });
             logger.error("No such Question exists..!");
-
         }
     }
-    
+
+    let end = Date.now();
+    var elapsed = end - start;
+    sdc.timing('timer.answer.http.delete', elapsed);
 }
 
 exports.updateAnswer = async (req, res) => {
@@ -200,15 +216,18 @@ exports.updateAnswer = async (req, res) => {
 
                         answer.answer_text = answer_text;
 
+                        let query_start = Date.now();
+
                         await answer.save();
+
+                        let query_end = Date.now();
+                        let query_elapsed = query_end - query_start;
+                        sdc.timing('query.answer.update', query_elapsed);
     
                         res.status(204).send({
                             message: "Updated Successfully!"
                         });
                         logger.info("Answer Updated..!");
-                        let end = Date.now();
-                        var elapsed = end - start;
-                        sdc.timing('timer.answer.http.put', elapsed);
 
                     } else {
 
@@ -241,7 +260,9 @@ exports.updateAnswer = async (req, res) => {
             });
             logger.error("No such Question exists..!");
         }
-
     }
 
+    let end = Date.now();
+    var elapsed = end - start;
+    sdc.timing('timer.answer.http.put', elapsed);
 }

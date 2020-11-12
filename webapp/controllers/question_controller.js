@@ -32,6 +32,8 @@ exports.createQuestion = async (req, res) => {
 
             if(!inputCategories){
 
+                let query_start = Date.now();
+
                 let question = await Question.create({
 
                     question_id: v4.uuid(),
@@ -41,22 +43,25 @@ exports.createQuestion = async (req, res) => {
                 
                 await user.addQuestion(question);
                 await question.setCategories([]);
+
+                let query_end = Date.now();
+                var query_elapsed = query_end - query_start;
+                sdc.timing('query.question.create', query_elapsed);
             
                 const result = await questionService.findQuestionById(question.question_id);
             
                 res.status(201).send(result.toJSON());
 
                 logger.info("Question has been posted..!");
-                let end = Date.now();
-                var elapsed = end - start;
-                sdc.timing('timer.question.http.post', elapsed);
-
+                
             } else {
 
                 let empty = await validator.checkIfCategoryEmpty(req, res, inputCategories);
 
                 if(empty){
     
+                    let query_start_1 = Date.now();
+
                     let question = await Question.create({
     
                         question_id: v4.uuid(),
@@ -75,10 +80,14 @@ exports.createQuestion = async (req, res) => {
     
                         if(check){
     
+                            let query_start_2 = Date.now();
                             let [category, created] = await Category.findOrCreate({
                                 where: {category: value}, 
                                 defaults: {category_id: v4.uuid()}
                             });
+                            let query_end_2 = Date.now();
+                            let query_elapsed_2 = query_end_2 - query_start_2;
+                            sdc.timing('query.category.create', query_elapsed_2);
     
                             await question.addCategory(category);
     
@@ -91,16 +100,16 @@ exports.createQuestion = async (req, res) => {
     
                         }  
                     }
+
+                    let query_end_1 = Date.now();
+                    var query_elapsed_1 = query_end_1 - query_start_1;
+                    sdc.timing('query.question.create', query_elapsed_1);
     
                     const result = await questionService.findQuestionById(question.question_id);
     
                     res.status(201).send(result.toJSON());
 
                     logger.info("Question has been posted..!");
-                    let end = Date.now();
-                    var elapsed = end - start;
-                    sdc.timing('timer.question.http.post', elapsed);
-    
                 }
             }
 
@@ -112,6 +121,10 @@ exports.createQuestion = async (req, res) => {
             logger.error("Incomplete Information - Missing Question Text");
         } 
     }
+
+    let end = Date.now();
+    var elapsed = end - start;
+    sdc.timing('timer.question.http.post', elapsed);
 }
 
 exports.getAllQuestions = async (req, res) => {
@@ -143,9 +156,7 @@ exports.getAQuestion = async (req, res) => {
 
         res.status(200).send(question);
         logger.info("Question Found..!");
-        let end = Date.now();
-        var elapsed = end - start;
-        sdc.timing('timer.question.http.get', elapsed);
+        
 
     } else {
         res.status(404).send({
@@ -153,6 +164,10 @@ exports.getAQuestion = async (req, res) => {
         });
         logger.error("No such Question exists..!");
     }
+
+    let end = Date.now();
+    var elapsed = end - start;
+    sdc.timing('timer.question.http.get', elapsed);
 
  }
 
@@ -173,6 +188,8 @@ exports.getAQuestion = async (req, res) => {
             if(question.user_id === user.id){
 
                 logger.info("User Authorized to Delete this Question..!");
+
+                let query_start = Date.now();
 
                 let answers = await question.getAnswers();
 
@@ -197,14 +214,16 @@ exports.getAQuestion = async (req, res) => {
                     if(result){
                         res.status(204).send();
                         logger.info("Question Deleted..!");
-                        let end = Date.now();
-                        var elapsed = end - start;
-                        sdc.timing('timer.question.http.delete', elapsed);
+
                     } else {
                         res.status(500).send();
                     }
 
                 }
+
+                let query_end = Date.now();
+                var query_elapsed = query_end - query_start;
+                sdc.timing('query.question.delete', query_elapsed);
 
             } else {
 
@@ -223,7 +242,11 @@ exports.getAQuestion = async (req, res) => {
             logger.error("No such Question exists..!");
         }
     }
-    
+
+    let end = Date.now();
+    var elapsed = end - start;
+    sdc.timing('timer.question.http.delete', elapsed);
+
 }
 
 exports.updateAQuestion = async (req, res) => {
@@ -257,6 +280,8 @@ exports.updateAQuestion = async (req, res) => {
         
                 } else {
 
+                    let query_start = Date.now();
+
                     if(!question_text){
 
                         if(typeof question_text === typeof ""){
@@ -269,11 +294,10 @@ exports.updateAQuestion = async (req, res) => {
 
                             return;
                         } 
-
+                        
                     } else {
 
                         question.question_text = question_text;
-
                     }
 
                     if(!(typeof categories === typeof undefined)){
@@ -296,7 +320,7 @@ exports.updateAQuestion = async (req, res) => {
                                     let [category, created] = await Category.findOrCreate({
                                         where: {category: value}, 
                                         defaults: {category_id: v4.uuid()}
-                                    })
+                                    });
                         
                                     await question.addCategory(category);
 
@@ -306,25 +330,23 @@ exports.updateAQuestion = async (req, res) => {
                                         message: "Category Name cannot have special characters."
                                     });
                                     logger.error("Invalid Category Name - Cannot have special characters");
-
                                 }
-                    
                             }
-
                         }
-
                     }
 
                     await question.save();
+
+                    let query_end = Date.now();
+                    var query_elapsed = query_end - query_start;
+                    sdc.timing('query.question.update', query_elapsed);
+
 
                     res.status(204).send({
                         message: "Updated Successfully!"
                     });
 
-                    logger.info("Question Updated..!");
-                    let end = Date.now();
-                    var elapsed = end - start;
-                    sdc.timing('timer.question.http.put', elapsed);
+                    logger.info("Question Updated..!");  
                 }
 
             } else {
@@ -333,7 +355,6 @@ exports.updateAQuestion = async (req, res) => {
                     message: "Unauthorized to update this question."
                 });
                 logger.error("User Unauthorized to Update this Question..!");
-
             }
 
         } else {
@@ -342,9 +363,11 @@ exports.updateAQuestion = async (req, res) => {
                 message: "Question doesnot exists!"
             });
             logger.error("No such Question exists..!");
-
         }
-
     }
+
+    let end = Date.now();
+    var elapsed = end - start;
+    sdc.timing('timer.question.http.put', elapsed);
 
 }

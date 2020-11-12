@@ -12,7 +12,7 @@ const sdc = new SDC({host: dbConfig.METRICS_HOSTNAME, port: dbConfig.METRICS_POR
 
 const findAllQuestions = async () => {
 
-    let start = Date.now();
+    let query_start = Date.now();
     const questions = await Question.findAll({
         include: [
             {
@@ -39,9 +39,9 @@ const findAllQuestions = async () => {
         ]
     });
 
-    let end = Date.now();
-    var elapsed = end - start;
-    sdc.timing('dbquery.questions.get', elapsed);
+    let query_end = Date.now();
+    var query_elapsed = query_end - query_start;
+    sdc.timing('query.questions.get', query_elapsed);
 
     return questions;
 
@@ -49,6 +49,7 @@ const findAllQuestions = async () => {
 
 const findQuestionById = async (id) => {
 
+    let query_start = Date.now();
     const question = await Question.findOne({
         where: {question_id: id }, 
         include: [
@@ -76,12 +77,17 @@ const findQuestionById = async (id) => {
         ]
     });
 
+    let query_end = Date.now();
+    var query_elapsed = query_end - query_start;
+    sdc.timing('query.question.get', query_elapsed);
+
     return question;
 
 }
 
 const findAnswerById = async (answer_id, question_id) => {
 
+    let query_start = Date.now();
     const answer = await Answer.findOne({
         where: {answer_id, question_id }, 
         include: [
@@ -91,6 +97,10 @@ const findAnswerById = async (answer_id, question_id) => {
            }
         ]
     });
+
+    let query_end = Date.now();
+    var query_elapsed = query_end - query_start;
+    sdc.timing('query.answer.get', query_elapsed);
 
     return answer;
 

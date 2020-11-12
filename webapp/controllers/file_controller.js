@@ -84,11 +84,6 @@ router.post('/:questionID/file', upload.single('image'), async (req, res) => {
 
                     await fileService.questionFileUpload(req.file.path, fileName, s3, question, fileId, req, res);
 
-                    logger.info("File Attached to Question..!");
-                    let end = Date.now();
-                    var elapsed = end - start;
-                    sdc.timing('timer.question.file.http.post', elapsed);
-
                 }
 
                 fs.unlink(req.file.path, () => {});
@@ -109,6 +104,10 @@ router.post('/:questionID/file', upload.single('image'), async (req, res) => {
             logger.error("No such Question exists..!");
         }
     }
+    
+    let end = Date.now();
+    var elapsed = end - start;
+    sdc.timing('timer.question.file.http.post', elapsed);
 });
 
 //Delete a file to Question
@@ -130,7 +129,13 @@ router.delete('/:questionID/file/:fileID', async (req, res) => {
 
                 logger.info("User Authorized to Delete this Question File..!");
 
+                let query_start = Date.now();
+
                 const file = await question.getAttachments({ where: {file_id: req.params.fileID}});
+
+                let query_end = Date.now();
+                var query_elapsed = query_end - query_start;
+                sdc.timing('query.files.get', query_elapsed);
 
                 if(file.length !== 0){
 
@@ -142,9 +147,6 @@ router.delete('/:questionID/file/:fileID', async (req, res) => {
 
                         res.status(204).send();
                         logger.info("Question File Deleted..!");
-                        let end = Date.now();
-                        var elapsed = end - start;
-                        sdc.timing('timer.question.file.http.delete', elapsed);
 
                     } else {
 
@@ -153,7 +155,6 @@ router.delete('/:questionID/file/:fileID', async (req, res) => {
                          });
                          logger.error(err);
                     }
-
                    
                 } else{
 
@@ -162,7 +163,6 @@ router.delete('/:questionID/file/:fileID', async (req, res) => {
                     });
                     logger.error("No such Question File exists..!");
                 }
-                 
 
             } else {
 
@@ -180,6 +180,10 @@ router.delete('/:questionID/file/:fileID', async (req, res) => {
             logger.error("No such Question exists..!");
         }
     }
+
+    let end = Date.now();
+    var elapsed = end - start;
+    sdc.timing('timer.question.file.http.delete', elapsed);
 });
 
 
@@ -233,10 +237,6 @@ router.post('/:questionID/answer/:answerID/file', upload.single('image'), async 
 
                         await fileService.answerFileUpload(req.file.path, fileName, s3, answer, fileId, req, res);
 
-                        logger.info("File Attached to Answer..!");
-                        let end = Date.now();
-                        var elapsed = end - start;
-                        sdc.timing('timer.answer.file.http.post', elapsed);
                     }
     
                     fs.unlink(req.file.path, () => {});
@@ -257,7 +257,7 @@ router.post('/:questionID/answer/:answerID/file', upload.single('image'), async 
                 logger.error("No such Answer exists..!");
     
             }
-
+            
         } else {
 
             res.status(404).send({
@@ -266,6 +266,10 @@ router.post('/:questionID/answer/:answerID/file', upload.single('image'), async 
             logger.error("No such Question exists..!");
         }
     }
+    
+    let end = Date.now();
+    var elapsed = end - start;
+    sdc.timing('timer.answer.file.http.post', elapsed);
 });
 
 //Delete a file to Answer
@@ -291,7 +295,13 @@ router.delete('/:questionID/answer/:answerID/file/:fileID', async (req, res) => 
 
                     logger.info("User Authorized to Delete this Answer File..!");
 
+                    let query_start = Date.now();
+
                     const file = await answer.getAttachments({ where: {file_id: req.params.fileID}});
+
+                    let query_end = Date.now();
+                    var query_elapsed = query_end - query_start;
+                    sdc.timing('query.files.get', query_elapsed);
 
                     if(file.length !== 0){
 
@@ -303,9 +313,6 @@ router.delete('/:questionID/answer/:answerID/file/:fileID', async (req, res) => 
                         
                             res.status(204).send();
                             logger.info("Answer File Deleted..!");
-                            let end = Date.now();
-                            var elapsed = end - start;
-                            sdc.timing('timer.answer.file.http.delete', elapsed);
     
                         } else {
     
@@ -321,7 +328,6 @@ router.delete('/:questionID/answer/:answerID/file/:fileID', async (req, res) => 
                             message: "File doesnot exists!"
                         });
                         logger.error("No such Answer File exists..!");
-
                     }
 
                 } else {
@@ -348,6 +354,10 @@ router.delete('/:questionID/answer/:answerID/file/:fileID', async (req, res) => 
             logger.error("No such Question exists..!");
         }
     }
+
+    let end = Date.now();
+    var elapsed = end - start;
+    sdc.timing('timer.answer.file.http.delete', elapsed);
 });
 
 module.exports = {router, s3};
