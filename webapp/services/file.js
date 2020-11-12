@@ -4,6 +4,7 @@ const _ = require('underscore');
 const SDC = require('statsd-client');
 const db = require('../database/sequelize');
 const logger = require('../config/logger');
+const dbConfig = require("../config/db.config.js");
 const File = db.file;
 
 const sdc = new SDC({host: dbConfig.METRICS_HOSTNAME, port: dbConfig.METRICS_PORT});
