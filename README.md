@@ -1,4 +1,4 @@
-# CSYE 6225 - Fall 2020
+# CSYE 6225 - Fall 2020 Demo
 
 ## Technology Stack
 * Backend Technology: Node JS
