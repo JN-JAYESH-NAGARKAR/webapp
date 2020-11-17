@@ -146,10 +146,10 @@
         <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
         <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="Loop Controller" enabled="true">
           <boolProp name="LoopController.continue_forever">false</boolProp>
-          <stringProp name="LoopController.loops">15</stringProp>
+          <stringProp name="LoopController.loops">50</stringProp>
         </elementProp>
         <stringProp name="ThreadGroup.num_threads">500</stringProp>
-        <stringProp name="ThreadGroup.ramp_time">20</stringProp>
+        <stringProp name="ThreadGroup.ramp_time">5</stringProp>
         <boolProp name="ThreadGroup.scheduler">false</boolProp>
         <stringProp name="ThreadGroup.duration"></stringProp>
         <stringProp name="ThreadGroup.delay"></stringProp>
@@ -277,7 +277,7 @@
               <elementProp name="" elementType="Authorization">
                 <stringProp name="Authorization.url">http://prod.deep-gamit.me/v1/question/</stringProp>
                 <stringProp name="Authorization.username">test@test.com</stringProp>
-                <stringProp name="Authorization.password">test@1234</stringProp>
+                <stringProp name="Authorization.password">Test@1234</stringProp>
                 <stringProp name="Authorization.domain"></stringProp>
                 <stringProp name="Authorization.realm"></stringProp>
               </elementProp>
