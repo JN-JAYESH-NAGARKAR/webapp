@@ -43,7 +43,7 @@ jobs:
       
         mkdir codedeploy_artifact
         cp webapp/amazon-cloudwatch-agent.json .
-        zip -r ${{ env.ARTIFACT_NAME }} webapp jmeter codedeploy_scripts/*.sh appspec.yml --exclude webapp/.env
+        zip -r ${{ env.ARTIFACT_NAME }} webapp codedeploy_scripts/*.sh appspec.yml --exclude webapp/.env
         pwd
         ls -al
         mv ${{ env.ARTIFACT_NAME }} codedeploy_artifact
