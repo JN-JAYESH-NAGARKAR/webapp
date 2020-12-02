@@ -19,11 +19,7 @@ const sdc = new SDC({host: dbConfig.METRICS_HOSTNAME, port: dbConfig.METRICS_POR
 
 //setting the credentials
 //The region should be the region of the bucket that you created
-AWS.config.update({
-    
-  region: process.env.AWS_REGION
-
-});
+AWS.config.update({ region: process.env.AWS_REGION });
 
 //Creating a new instance of S3:
 const s3 = new AWS.S3();
