@@ -3,6 +3,7 @@ name: On Push - Build and Deploy WebApp
 on:
   push:
     branches: [ master ]
+  workflow_dispatch:
 
 jobs:
   build:
